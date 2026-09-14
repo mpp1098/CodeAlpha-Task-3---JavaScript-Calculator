@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>   JavaScriptCalculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh; margin: 0; display: grid; place-items: center;
+      font-family: Arial, sans-serif; background: linear-gradient(135deg, #1d3557, #457b9d);
+    }
+    .calculator {
+      width: min(92%, 380px); padding: 22px; border-radius: 20px;
+      background: #f8f9fa; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    h1 { margin: 0 0 18px; text-align: center; color: #1d3557; font-size: 1.5rem; }
+    .display {
+      min-height: 100px; padding: 18px; margin-bottom: 18px; border-radius: 12px;
+      background: #1d3557; color: white; text-align: right; overflow: auto;
+    }
+    #expression { min-height: 28px; margin: 0; color: #bde0fe; font-size: 1rem; }
+    #result { margin: 10px 0 0; font-size: 2rem; font-weight: bold; }
+    .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    button {
+      border: none; border-radius: 12px; padding: 18px 8px; cursor: pointer;
+      background: #e9ecef; font-size: 1.1rem; font-weight: bold; transition: 0.2s;
+    }
+    button:hover { transform: translateY(-3px); background: #dbeafe; }
+    .operator { background: #a8dadc; color: #123; }
+    .clear { background: #e63946; color: white; }
+    .equals { background: #1d3557; color: white; }
+    .equals:hover { background: #457b9d; }
+    .history { margin-top: 20px; border-top: 1px solid #ddd; padding-top: 12px; }
+    .history h2 { margin: 0 0 8px; font-size: 1rem; color: #1d3557; }
+    #historyList { max-height: 110px; overflow-y: auto; padding-left: 18px; color: #555; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <main class="calculator">
+    <h1> Calculator</h1>
+
+    <section class="display">
+      <p id="expression">0</p>
+      <p id="result">0</p>
+    </section>
+
+    <section class="buttons">
+      <button class="clear" onclick="clearDisplay()">AC</button>
+      <button class="clear" onclick="backspace()">⌫</button>
+      <button class="operator" onclick="addValue('%')">%</button>
+      <button class="operator" onclick="addValue('/')">÷</button>
+
+      <button onclick="addValue('7')">7</button>
+      <button onclick="addValue('8')">8</button>
+      <button onclick="addValue('9')">9</button>
+      <button class="operator" onclick="addValue('*')">×</button>
+
+      <button onclick="addValue('4')">4</button>
+      <button onclick="addValue('5')">5</button>
+      <button onclick="addValue('6')">6</button>
+      <button class="operator" onclick="addValue('-')">−</button>
+
+      <button onclick="addValue('1')">1</button>
+      <button onclick="addValue('2')">2</button>
+      <button onclick="addValue('3')">3</button>
+      <button class="operator" onclick="addValue('+')">+</button>
+
+      <button onclick="addValue('0')">0</button>
+      <button onclick="addValue('.')">.</button>
+      <button onclick="addValue('00')">00</button>
+      <button class="equals" onclick="calculate()">=</button>
+    </section>
+
+    <section class="history">
+      <h2>Calculation History</h2>
+      <ol id="historyList"></ol>
+    </section>
+  </main>
+
+  <script>
+    let expression = "";
+
+    function updateDisplay() {
+      document.getElementById("expression").textContent = expression || "0";
+
+      if (expression && !/[+\-*/%]$/.test(expression)) {
+        try {
+          const preview = Function(`"use strict"; return (${expression})`)();
+          document.getElementById("result").textContent = preview;
+        } catch {
+          document.getElementById("result").textContent = "0";
+        }
+      } else {
+        document.getElementById("result").textContent = "0";
+      }
+    }
+
+    function addValue(value) {
+      if (/[+\-*/%]/.test(value) && /[+\-*/%]$/.test(expression)) {
+        expression = expression.slice(0, -1) + value;
+      } else {
+        expression += value;
+      }
+      updateDisplay();
+    }
+
+    function clearDisplay() {
+      expression = "";
+      updateDisplay();
+    }
+
+    function backspace() {
+      expression = expression.slice(0, -1);
+      updateDisplay();
+    }
+
+    function calculate() {
+      if (!expression || /[+\-*/%]$/.test(expression)) return;
+
+      try {
+        const answer = Function(`"use strict"; return (${expression})`)();
+        document.getElementById("result").textContent = answer;
+
+        const item = document.createElement("li");
+        item.textContent = `${expression} = ${answer}`;
+        document.getElementById("historyList").prepend(item);
+
+        expression = String(answer);
+        updateDisplay();
+      } catch {
+        document.getElementById("result").textContent = "Error";
+      }
+    }
+
+    document.addEventListener("keydown", event => {
+      if ("0123456789.+-*/%".includes(event.key)) addValue(event.key);
+      if (event.key === "Enter" || event.key === "=") calculate();
+      if (event.key === "Backspace") backspace();
+      if (event.key === "Escape") clearDisplay();
+    });
+  </script>
+</body>
+</html>
